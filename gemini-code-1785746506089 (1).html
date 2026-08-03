@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>دستیار شخصی My15Routine</title>
+  
+  <!-- تلگرام وب‌اپ -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- تقویم شمسی پویا -->
+  <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+  <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #f8fafc;
+      --text-sub: #94a3b8;
+      --primary: #8b5cf6;
+      --primary-gradient: linear-gradient(135deg, #8b5cf6, #c084fc);
+      --border-color: #334155;
+      --input-bg: #0f172a;
+      --accent-work: #38bdf8;
+      --accent-personal: #34d399;
+      --accent-health: #f43f5e;
+    }
+
+    [data-theme="light"] {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #0f172a;
+      --text-sub: #64748b;
+      --primary: #4f46e5;
+      --primary-gradient: linear-gradient(135deg, #4f46e5, #6366f1);
+      --border-color: #e2e8f0;
+      --input-bg: #f1f5f9;
+    }
+
+    [data-theme="blue"] {
+      --bg-color: #030712;
+      --card-bg: #111827;
+      --text-color: #f0f9ff;
+      --text-sub: #7dd3fc;
+      --primary: #0284c7;
+      --primary-gradient: linear-gradient(135deg, #0284c7, #38bdf8);
+      --border-color: #1e293b;
+      --input-bg: #0b1329;
+    }
+
+    [data-theme="sage"] {
+      --bg-color: #f4f1ea;
+      --card-bg: #ffffff;
+      --text-color: #2c3e35;
+      --text-sub: #688275;
+      --primary: #4a7c59;
+      --primary-gradient: linear-gradient(135deg, #4a7c59, #68bb89);
+      --border-color: #e0dace;
+      --input-bg: #faf8f5;
+    }
+
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0; padding: 16px;
+      transition: all 0.3s ease;
+      padding-bottom: 85px;
+    }
+
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .header h2 { margin: 0; font-size: 18px; font-weight: 800; }
+    
+    .theme-selector {
+      display: flex; gap: 6px; background: var(--card-bg); padding: 5px; border-radius: 20px; border: 1px solid var(--border-color);
+    }
+    .theme-btn { width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
+    .nav-tabs {
+      position: fixed; bottom: 10px; left: 12px; right: 12px;
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      border-radius: 25px; display: flex; padding: 4px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2); backdrop-filter: blur(8px);
+      z-index: 100;
+    }
+    .tab-btn {
+      flex: 1; padding: 10px 4px; border: none; border-radius: 20px;
+      background: transparent; color: var(--text-sub); font-size: 11px; font-weight: bold; cursor: pointer;
+      text-align: center;
+    }
+    .tab-btn.active { background: var(--primary-gradient); color: #fff; }
+
+    .form-group { margin-bottom: 10px; }
+    label { font-size: 11px; font-weight: bold; color: var(--text-sub); display: block; margin-bottom: 4px; }
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; border-radius: 12px;
+      border: 1px solid var(--border-color); background: var(--input-bg);
+      color: var(--text-color); font-size: 13px; outline: none;
+    }
+    .row { display: flex; gap: 8px; }
+    .row .form-group { flex: 1; }
+
+    .btn-submit {
+      width: 100%; padding: 12px; border-radius: 20px; border: none;
+      background: var(--primary-gradient); color: #fff; font-size: 13px; font-weight: bold; cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-top: 6px;
+    }
+
+    .task-item {
+      padding: 10px 12px; background: var(--input-bg); border-radius: 12px;
+      margin-bottom: 6px; border: 1px solid var(--border-color);
+    }
+    .task-title { font-size: 13px; font-weight: bold; display: block; margin-bottom: 2px; }
+    .task-meta { font-size: 10px; color: var(--text-sub); }
+
+    .idea-card {
+      background: var(--input-bg); border: 1px solid var(--border-color);
+      border-radius: 12px; padding: 10px; margin-bottom: 8px; font-size: 12px;
+    }
+
+    .filter-btn-group { display: flex; gap: 6px; margin-bottom: 12px; }
+    .filter-btn {
+      flex: 1; padding: 6px; border-radius: 10px; border: 1px solid var(--border-color);
+      background: var(--input-bg); color: var(--text-sub); font-size: 11px; cursor: pointer;
+    }
+    .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .pie-chart-container {
+      display: flex; justify-content: center; align-items: center; margin: 15px 0;
+    }
+    .pie-chart {
+      width: 140px; height: 140px; border-radius: 50%;
+      background: conic-gradient(
+        var(--accent-work) 0% 33%,
+        var(--accent-personal) 33% 66%,
+        var(--accent-health) 66% 100%
+      );
+      display: flex; justify-content: center; align-items: center;
+    }
+    .pie-chart-inner {
+      width: 80px; height: 80px; background: var(--card-bg); border-radius: 50%;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      font-size: 11px; font-weight: bold;
+    }
+
+    .chart-legend {
+      display: flex; justify-content: space-around; font-size: 11px; color: var(--text-sub); margin-top: 10px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+    .calendar-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px;
+    }
+    .calendar-day-head { font-size: 10px; color: var(--text-sub); font-weight: bold; padding-bottom: 4px; }
+    .calendar-day {
+      padding: 6px 2px; font-size: 10px; border-radius: 6px; background: var(--input-bg); border: 1px solid var(--border-color);
+    }
+    .calendar-day.active-day { background: var(--primary); color: #fff; font-weight: bold; }
+  </style>
+</head>
+<body data-theme="dark">
+
+  <div class="header">
+    <h2>🤖 دستیار اختصاصی</h2>
+    <div class="theme-selector">
+      <button class="theme-btn" style="background: #0f172a;" title="دارک" onclick="setTheme('dark')"></button>
+      <button class="theme-btn" style="background: #ffffff; border: 1px solid #ccc;" title="لایت" onclick="setTheme('light')"></button>
+      <button class="theme-btn" style="background: #0284c7;" title="آبی" onclick="setTheme('blue')"></button>
+      <button class="theme-btn" style="background: #e0dace;" title="کرم/سبز" onclick="setTheme('sage')"></button>
+    </div>
+  </div>
+
+  <!-- ==================== بخش ۱: کارها ==================== -->
+  <div id="section-tasks">
+    <div class="card">
+      <div class="card-title">🎯 اولویت‌ها و اهداف کلیدی این هفته</div>
+      <input type="text" id="weeklyGoal" placeholder="مثلاً: ۳ روز ورزش، نهایی کردن قرارداد..." onchange="saveGoal(this.value)">
+    </div>
+
+    <div class="card">
+      <div class="card-title">➕ ثبت کار جدید</div>
+      
+      <div class="form-group">
+        <label>عنوان کار</label>
+        <input type="text" id="taskTitle" placeholder="مثلاً: جلسه با تیم برنامه‌نویسی">
+      </div>
+
+      <div class="form-group">
+        <label>دسته‌بندی (توازن زندگی)</label>
+        <select id="taskCategory">
+          <option value="work">💼 کاری / تحصیلی</option>
+          <option value="personal">👤 شخصی / زندگی</option>
+          <option value="health">🧘 سلامت / ورزش</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label>تاریخ (انتخاب از تقویم شمسی)</label>
+          <!-- کادر انتخاب تقویم شمسی -->
+          <input type="text" id="taskPersianPicker" class="persian-datepicker" placeholder="روی تقویم کلیک کنید..." readonly style="cursor: pointer;">
+        </div>
+        <div class="form-group">
+          <label>زمان (۲۴ ساعته)</label>
+          <!-- انتخاب دقیق ۲۴ ساعته -->
+          <select id="taskTime24">
+            <option value="">ساعت...</option>
+            <script>
+              for(let h=0; h<24; h++) {
+                let hh = h < 10 ? '0' + h : h;
+                document.write(`<option value="${hh}:00">${hh}:00</option>`);
+                document.write(`<option value="${hh}:30">${hh}:30</option>`);
+              }
+            </script>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="addNewTask()">ثبت کار در سیستم 🚀</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📌 لیست کارهای ثبت‌شده</div>
+      <div id="taskList">
+        <p style="font-size: 11px; color: var(--text-sub); text-align: center;">هیچ کاری ثبت نشده است.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== بخش ۲: تخلیه ذهن ==================== -->
+  <div id="section-braindump" style="display: none;">
+    <div class="card">
+      <div class="card-title">🧠 تخلیه ذهن و یادداشت ایده</div>
+      <textarea id="brainNote" rows="4" placeholder="هر ایده‌ای یا موضوع ناگهانی را اینجا بنویسید..."></textarea>
+      <button class="btn-submit" onclick="saveBrainDump()">ذخیره ایده 📝</button>
+    </div>
+    <div class="card">
+      <div class="card-title">💡 ایده‌ها و یادداشت‌های ذخیره‌شده</div>
+      <div id="brainList">
+        <p style="font-size: 11px; color: var(--text-sub); text-align: center;">یادداشتی وجود ندارد.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== بخش ۳: آنالیز ==================== -->
+  <div id="section-analytics" style="display: none;">
+    <div class="card">
+      <div class="card-title">📊 آنالیز عملکرد و توازن زندگی</div>
+      
+      <div class="filter-btn-group">
+        <button class="filter-btn active" onclick="setAnalysisTime('daily', this)">روزانه</button>
+        <button class="filter-btn" onclick="setAnalysisTime('weekly', this)">هفتگی</button>
+        <button class="filter-btn" onclick="setAnalysisTime('monthly', this)">ماهانه</button>
+      </div>
+
+      <div class="pie-chart-container">
+        <div class="pie-chart" id="pieChart">
+          <div class="pie-chart-inner">
+            <span id="chartTotalCount">۰</span>
+            <span style="font-size: 9px; color: var(--text-sub);">کل کارها</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-legend">
+        <div class="legend-item"><span class="dot" style="background: var(--accent-work);"></span> کاری: <b id="pctWork">0%</b></div>
+        <div class="legend-item"><span class="dot" style="background: var(--accent-personal);"></span> شخصی: <b id="pctPersonal">0%</b></div>
+        <div class="legend-item"><span class="dot" style="background: var(--accent-health);"></span> سلامت: <b id="pctHealth">0%</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🗓️ نگاه کلی به ماه (تقویم شمسی)</div>
+      <p style="font-size: 11px; color: var(--text-sub); margin: 0 0 8px 0;">پراکنش برنامه‌ریزی شما در طول ماه:</p>
+      
+      <div class="calendar-grid">
+        <div class="calendar-day-head">ش</div>
+        <div class="calendar-day-head">ی</div>
+        <div class="calendar-day-head">د</div>
+        <div class="calendar-day-head">س</div>
+        <div class="calendar-day-head">چ</div>
+        <div class="calendar-day-head">پ</div>
+        <div class="calendar-day-head">ج</div>
+        
+        <script>
+          for (let i = 1; i <= 31; i++) {
+            let activeClass = (i === 5 || i === 12 || i === 19 || i === 25) ? 'active-day' : '';
+            document.write(`<div class="calendar-day ${activeClass}">${i}</div>`);
+          }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('tasks', this)">📋 کارها</button>
+    <button class="tab-btn" onclick="switchTab('braindump', this)">🧠 تخلیه ذهن</button>
+    <button class="tab-btn" onclick="switchTab('analytics', this)">📊 آنالیز</button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let tasks = JSON.parse(localStorage.getItem('my_tasks')) || [];
+    let brainDumps = JSON.parse(localStorage.getItem('my_braindumps')) || [];
+
+    $(document).ready(function() {
+      // فعال‌سازی تقویم شمسی انتخاب‌گر
+      $('#taskPersianPicker').persianDatepicker({
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        initialValue: true
+      });
+
+      const savedTheme = localStorage.getItem('my_theme') || 'dark';
+      setTheme(savedTheme);
+
+      document.getElementById('weeklyGoal').value = localStorage.getItem('weekly_goal') || '';
+
+      renderTasks();
+      renderBrainDumps();
+      updateAnalytics();
+    });
+
+    function setTheme(theme) {
+      document.body.setAttribute('data-theme', theme);
+      localStorage.setItem('my_theme', theme);
+    }
+
+    function switchTab(tabName, el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+
+      document.getElementById('section-tasks').style.display = tabName === 'tasks' ? 'block' : 'none';
+      document.getElementById('section-braindump').style.display = tabName === 'braindump' ? 'block' : 'none';
+      document.getElementById('section-analytics').style.display = tabName === 'analytics' ? 'block' : 'none';
+    }
+
+    function saveGoal(val) {
+      localStorage.setItem('weekly_goal', val);
+    }
+
+    function addNewTask() {
+      const titleInput = document.getElementById('taskTitle');
+      const categoryInput = document.getElementById('taskCategory');
+      const dateInput = document.getElementById('taskPersianPicker');
+      const timeInput = document.getElementById('taskTime24');
+
+      if (!titleInput.value.trim()) { alert('لطفاً عنوان کار را وارد کنید'); return; }
+
+      const newTask = {
+        id: Date.now(),
+        title: titleInput.value,
+        category: categoryInput.value,
+        date: dateInput.value,
+        time: timeInput.value
+      };
+
+      tasks.push(newTask);
+      localStorage.setItem('my_tasks', JSON.stringify(tasks));
+
+      titleInput.value = '';
+      timeInput.value = '';
+
+      renderTasks();
+      updateAnalytics();
+      tg.sendData(JSON.stringify({ type: 'new_task', task: newTask }));
+    }
+
+    function renderTasks() {
+      const container = document.getElementById('taskList');
+      if (tasks.length === 0) {
+        container.innerHTML = `<p style="font-size: 11px; color: var(--text-sub); text-align: center;">هیچ کاری ثبت نشده است.</p>`;
+        return;
+      }
+      container.innerHTML = tasks.slice().reverse().map(t => `
+        <div class="task-item">
+          <span class="task-title">📌 ${t.title}</span>
+          <span class="task-meta">📅 تاریخ: ${t.date || 'تعیین‌نشده'} | ⏰ زمان: ${t.time || 'تعیین‌نشده'} | ${getCatName(t.category)}</span>
+        </div>
+      `).join('');
+    }
+
+    function getCatName(c) {
+      if (c === 'work') return '💼 کاری';
+      if (c === 'personal') return '👤 شخصی';
+      return '🧘 سلامت';
+    }
+
+    function saveBrainDump() {
+      const noteInput = document.getElementById('brainNote');
+      if (!noteInput.value.trim()) return;
+
+      brainDumps.push(noteInput.value);
+      localStorage.setItem('my_braindumps', JSON.stringify(brainDumps));
+
+      const savedNote = noteInput.value;
+      noteInput.value = '';
+      renderBrainDumps();
+      tg.sendData(JSON.stringify({ type: 'brain_dump', note: savedNote }));
+    }
+
+    function renderBrainDumps() {
+      const container = document.getElementById('brainList');
+      if (brainDumps.length === 0) {
+        container.innerHTML = `<p style="font-size: 11px; color: var(--text-sub); text-align: center;">یادداشتی وجود ندارد.</p>`;
+        return;
+      }
+      container.innerHTML = brainDumps.slice().reverse().map(b => `<div class="idea-card">💡 ${b}</div>`).join('');
+    }
+
+    function setAnalysisTime(type, el) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      updateAnalytics();
+    }
+
+    function updateAnalytics() {
+      const total = tasks.length;
+      document.getElementById('chartTotalCount').innerText = total;
+
+      if (total === 0) {
+        document.getElementById('pctWork').innerText = '0%';
+        document.getElementById('pctPersonal').innerText = '0%';
+        document.getElementById('pctHealth').innerText = '0%';
+        return;
+      }
+
+      const work = tasks.filter(t => t.category === 'work').length;
+      const personal = tasks.filter(t => t.category === 'personal').length;
+      const health = tasks.filter(t => t.category === 'health').length;
+
+      const pWork = Math.round((work / total) * 100);
+      const pPersonal = Math.round((personal / total) * 100);
+      const pHealth = 100 - (pWork + pPersonal);
+
+      document.getElementById('pctWork').innerText = pWork + '%';
+      document.getElementById('pctPersonal').innerText = pPersonal + '%';
+      document.getElementById('pctHealth').innerText = pHealth + '%';
+
+      const chart = document.getElementById('pieChart');
+      chart.style.background = `conic-gradient(
+        var(--accent-work) 0% ${pWork}%,
+        var(--accent-personal) ${pWork}% ${pWork + pPersonal}%,
+        var(--accent-health) ${pWork + pPersonal}% 100%
+      )`;
+    }
+  </script>
+</body>
+</html>
